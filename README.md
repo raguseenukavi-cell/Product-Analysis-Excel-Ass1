@@ -1,42 +1,154 @@
-Markdown# 📊 Excel Data Exploration & Analysis: Product Dataset
+Data Cleaning & Transformation — E-Commerce Product Dataset
+An end-to-end data-cleaning project on a messy e-commerce product dataset. The raw data contained missing values, inconsistent text formatting, spelling errors, duplicate records, and composite fields that had to be split and standardised. This repository documents the complete process, from auditing the raw data to delivering an analysis-ready, formatted dataset.
+📊 Project Overview
 
-Welcome to the first project in my Data Analysis Portfolio! This project demonstrates fundamental data exploration, aggregation, logical categorization, and text manipulation techniques using **Microsoft Excel**.
 
----
-
-## 📌 Project Overview
-As an aspiring Data Analyst, mastering foundational Excel techniques is critical for cleaning, structuring, and extracting key insights from raw data. 
-
-In this analysis, a dataset containing product details (IDs, names, brands, quantities, categories, and prices) was processed to summarize essential sales metrics, establish custom pricing classifications, and extract transactional metadata from alphanumeric text codes.
-
----
-
-## 📁 Dataset Summary
-- **Source Data:** Product Dataset
-- **Attributes Included:** `Product ID`, `Product Name`, `Brand Name`, `Price ($)`, `Quantity`, `Category`
-- **Total Records:** 33 Products
-
----
-
-## 🎯 Key Tasks & Excel Solutions
-
-### 1. Basic Data Exploration (Aggregation & Metrics)
-* **Total Price of All Products:** Calculated using `=SUM(D2:D34)` $\rightarrow$ **$10,000**
-* **Total Product Count:** Calculated using `=COUNTA(C2:C34)` $\rightarrow$ **33 Products**
-* **Average Product Price:** Calculated using `=AVERAGE(D2:D34)` $\rightarrow$ **$303.03**
-* **Minimum Product Price:** Identified using `=MIN(D2:D34)` $\rightarrow$ **$30**
-* **Maximum Product Price:** Identified using `=MAX(D2:D34)` $\rightarrow$ **$1,000**
-
----
-
-### 2. Logical Categorization & Conditional Logic
-* **Price Range Classification (`IF` Function):**
-  Created a custom column named `Price Range` to categorize products based on price thresholds:
-  ```excel
-  =IF(D2 >= 500, "High Price", "Standard Price")
-High Price: Products with a price $\ge \$500$   Standard Price: Products with a price $<\$500$   Electronics Category Total Value (SUMIF Function):Calculated the cumulative sum of all products in the Electronics category:Excel=SUMIF(F2:F35, "Electronics", D2:D35)
-$\rightarrow$ $8,050   Budget Product Count (COUNTIF Function):Counted the total number of products priced below $100:Excel=COUNTIF(D2:D35, "<100")
-$\rightarrow$ 11 Products   3. Text Extraction & FormattingExtracted underlying metadata structured within the alphanumeric Product ID column (e.g., 28-JAN-US) to generate three new calculated columns:   Output ColumnFunction UsedExcel Formula ExampleSample InputSample OutputDescriptionDayLEFT=LEFT(A2, 2)28-JAN-US   28   First 2 characters   MonthMID=MID(A2, 4, 3)28-JAN-US   JAN   4th to 6th characters   Country CodeRIGHT=RIGHT(A2, 2)28-JAN-US[cite: 1]US[cite: 1]Last 2 characters[cite: 1]🛠️ Skills DemonstratedMathematical Aggregations: SUM, COUNTA, AVERAGE, MIN, MAX[cite: 1]Logical & Conditional Functions: IF, SUMIF, COUNTIF[cite: 1]Text Manipulation Functions: LEFT, MID, RIGHT[cite: 1]Data Structuring & Portfolio Documentation🚀 How to ViewClone or download this repository.Open the .xlsx file included in the root folder using Microsoft Excel or Google Sheets to inspect the formulas and sheet setup.
----
-
-Are there any specific additions you'd like to make to this project, such as adding c
+Domain
+E-commerce / Retail
+Raw dataset
+34 products × 6 columns
+Cleaned dataset
+31 products × 6 columns
+Tools used
+Microsoft Excel (find & replace, number formats, conditional formatting) and Python (pandas, openpyxl)
+The cleaned file Assignment_2_Cleaned.xlsx contains two sheets: Original Data (the untouched raw data, for before/after comparison) and Cleaned Data (the final, analysis-ready output).
+🗂️ The Raw Data
+Each product record had six fields:
+Column
+Description
+Example
+Product ID
+Composite code: DD-MMM-CC (day-month-country)
+28-JAN-US
+Product Name
+Name of the product
+laptop
+Brand Name
+Manufacturer
+Dell
+Price ($)
+Product price
+1000
+Quantity
+Units in stock
+30
+Category
+Product category
+Electronics
+🧹 Data Cleaning Process
+1. Handling Missing Values
+An audit of the dataset found:
+•
+3 missing prices — Sony Headphones, Coleman Camping Tent, Ray-Ban Sunglasses
+•
+4 missing categories — North Face Backpack, Adidas Sneakers, Nespresso Coffee Maker, Xiaomi Fitness Tracker
+Missing prices — approach: Prices were imputed with the median price of each product's own category. The category median was chosen over the mean because it is robust to the outliers in this data (e.g. a $1,000 laptop would inflate the mean of the Electronics group).
+Product
+Category
+Imputed Price
+Sony Headphones
+Electronics
+$600.00
+Coleman Camping Tent
+Outdoor
+$130.00
+Ray-Ban Sunglasses
+Fashion
+$70.00
+Alternative considered: dropping the rows (only ~9% of data, but the rows still carry useful quantity/brand information) or leaving them blank (breaks downstream aggregations like total inventory value).
+Missing categories — approach: Categories were imputed by mapping the product to its category elsewhere in the dataset — the same product family already appears in the data with a known category, so no guesswork was involved:
+Product
+Imputed Category
+Evidence in data
+Backpack
+Accessories
+Laptop Bag → Accessories
+Sneakers (Adidas)
+Fashion
+Sneakers (Nike) → Fashion
+Coffee Maker
+Kitchen
+Coffee Maker (Keurig) → Kitchen
+Fitness Tracker
+Electronics
+Fitness Tracker (Garmin) → Electronics
+2. Correcting Inconsistent Data
+•
+Product Name (text format): 5 entries were in lowercase (laptop, smartphone, headphones) while the rest used Title Case. Standardised all values to Title Case using find & replace (laptop → Laptop, smartphone → Smartphone, headphones → Headphones).
+•
+Category (typos): 5 entries contained the misspelling `Electroni` instead of Electronics. Fixed with find & replace (Electroni → Electronics), then verified the Category column contains only 5 valid values: Accessories, Electronics, Fashion, Kitchen, Outdoor.
+3. Removing Duplicates
+A full-row duplicate check found 3 records entered twice (6 duplicate rows in total, keeping the first occurrence of each):
+•
+HP Laptop — 17-JUN-IN
+•
+Bose Headphones — 16-APR-ES
+•
+Samsonite Laptop Bag — 21-AUG-CA
+The second occurrence of each was removed, taking the dataset from 34 rows to 31 rows.
+4. Splitting and Merging Data
+•
+Split `Product ID` into two columns, removing the - separators:
+•
+Manufacturing Date — the DD-MMM part, parsed into a true date (e.g. 28-JAN → 28 January). Note: the ID encodes only day and month, so the year 2024 was assumed for all records.
+•
+Country Code — the final two-letter part (US, UK, IN, CA, AU, DE, ES, CN, IT, RU, BR, FR).
+•
+Merged `Brand Name` + `Product Name` into a single `Product Brand` column (e.g. Dell + Laptop → Dell Laptop), giving a single human-readable identifier per product.
+5. Number Formatting
+•
+Price formatted as currency: $#,##0.00 (e.g. 1000 → $1,000.00).
+•
+Manufacturing Date formatted as DD-MM-YYYY (e.g. 28-01-2024), stored as real dates so they remain sortable and filterable.
+6. Conditional Formatting
+•
+Data bars on the Price column — an in-cell gradient bar makes expensive vs. cheap products instantly visible (laptops at ~$1,000 stand out against accessories at ~$50).
+•
+Custom rule on the Category column — cells where the category equals Electronics are highlighted in yellow, using the custom conditional-formatting rule =$F2="Electronics". This makes the largest product group easy to scan.
+📈 Before → After Summary
+Check
+Raw Data
+Cleaned Data
+Rows
+34
+31 (−3 duplicates)
+Missing prices
+3
+0
+Missing categories
+4
+0
+Misspelled categories (Electroni)
+5
+0
+Inconsistent product-name casing
+5
+0
+Columns
+6 (incl. composite Product ID)
+6 (incl. split date/country + merged Product Brand)
+Number/date formats
+Unformatted
+Currency + DD-MM-YYYY
+📁 Repository Structure
+code
+├── README.md                          # Project documentation (this file)
+├── Assignment_2_-_Data_Cleaning_and_Transformation.xlsx   # Raw dataset (as received)
+├── Assignment_2_Cleaned.xlsx          # Final cleaned workbook (Original Data + Cleaned Data sheets)
+└── data_cleaning.py                   # Python script reproducing every cleaning step
+🔁 Reproducing the Cleaned File
+bash
+pip install pandas openpyxl
+python data_cleaning.py
+The script reads the raw workbook, applies all six cleaning steps in order (fix text → de-duplicate → impute), and writes Assignment_2_Cleaned.xlsx. Every imputed value and removed duplicate is printed to the console so the transformation is fully auditable.
+💡 Key Takeaways
+•
+Audit before you clean — profiling the raw data first (missing-value counts, category frequencies, duplicate checks) revealed exactly six distinct problems to solve.
+•
+Impute with domain logic, not blind defaults — category medians for prices and product-to-category mapping produced imputations that are defensible, not arbitrary.
+•
+Median beats mean for skewed price data — a single $1,000 laptop would pull a mean-based imputation far above the typical product price.
+•
+De-duplicate before imputing — otherwise duplicate rows bias the medians used for imputation.
+•
+Keep formatting semantic — dates stored as real dates (displayed DD-MM-YYYY) rather than text, and prices as true numbers with a currency format, so the file remains usable by pivot tables and further analysis.
